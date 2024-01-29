@@ -2,13 +2,16 @@ import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { changeField, initializeForm, register } from '../../modules/auth';
 import AuthForm from '../../components/auth/AuthForm';
+import { check } from '../../modules/user';
+import { useNavigate } from 'react-router-dom';
 
 const RegisterForm = () => {
   const dispatch = useDispatch();
-  const { form, auth, authError } = useSelector(({ auth }) => ({
+  const { form, auth, authError, user } = useSelector(({ auth, user }) => ({
     form: auth.register,
     auth: auth.auth,
     authError: auth.authError,
+    user: user.user,
   }));
   // input onChange Handler
   const onChange = (e) => {
@@ -45,8 +48,24 @@ const RegisterForm = () => {
     }
     if (auth) {
       console.log(auth);
+      dispatch(check());
     }
-  }, [auth, authError]);
+  }, [auth, authError, dispatch]);
+
+  useEffect(() => {
+    if (user) {
+      console.log('check API');
+      console.log(user);
+    }
+  }, [user]);
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user) {
+      navigate('/');
+    }
+  }, [navigate, user]);
 
   return (
     <AuthForm
