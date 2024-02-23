@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import palette from '../../lib/styles/palette';
-import React from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 
 const TagBoxBlock = styled.div`
   width: 100%;
@@ -61,24 +61,67 @@ const TagListBlock = styled.div`
   margin-top: 0.5rem;
 `;
 
-const TagItem = React.memo(({ tag }) => <Tag>#{tag}</Tag>);
+const TagItem = React.memo(({ tag, onRemove }) => (
+  <Tag onClick={() => onRemove(tag)}>#{tag}</Tag>
+));
 
-const TagList = React.memo(({ tags }) => (
+const TagList = React.memo(({ tags, onRemove }) => (
   <TagListBlock>
     {tags.map((tag) => (
-      <TagItem key={tag} tag={tag} />
+      <TagItem key={tag} tag={tag} onRemove={onRemove} />
     ))}
   </TagListBlock>
 ));
 
 const TagBox = () => {
+  const [input, setInput] = useState('');
+  const [localTags, setLocalTags] = useState([]);
+
+  const insertTag = useCallback(
+    (tag) => {
+      if (!tag) return;
+      if (localTags.includes(tag)) return;
+      setLocalTags([...localTags, tag]);
+    },
+    [localTags],
+  );
+
+  const onRemove = useCallback(
+    (tag) => {
+      setLocalTags(localTags.filter((t) => t !== tag));
+    },
+    [localTags],
+  );
+
+  const onChange = useCallback((e) => {
+    setInput(e.target.value);
+  }, []);
+
+  const onSubmit = useCallback(
+    (e) => {
+      e.preventDefault();
+      insertTag(input.trim());
+      setInput('');
+      inputRef.current.focus();
+    },
+    [input, insertTag],
+  );
+
+  const inputRef = useRef(null);
+
   return (
     <TagBoxBlock>
       <h4>태그</h4>
-      <TagForm>
-        <input placeholder="태그 입력" /> <button type="submit">추가</button>
+      <TagForm onSubmit={onSubmit}>
+        <input
+          ref={inputRef}
+          placeholder="태그 입력"
+          value={input}
+          onChange={onChange}
+        />
+        <button type="submit">추가</button>
       </TagForm>
-      <TagList tags={['tag1', 'tag2', 'tag3']} />
+      <TagList tags={localTags} onRemove={onRemove} />
     </TagBoxBlock>
   );
 };
