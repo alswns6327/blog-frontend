@@ -7,8 +7,26 @@ const PaginationContainer = () => {
   const [searchParams] = useSearchParams();
 
   const { username } = useParams();
+  const tag = searchParams.get('tag');
+  // page가 없을 경우
+  const page = parseInt(searchParams.get('page'), 10) || 1;
 
-  return <div></div>;
+  const { lastPage, posts, loading } = useSelector(({ posts, loading }) => ({
+    lastPage: posts.lastPage,
+    posts: posts.posts,
+    loading: loading['posts/LIST_POSTS'],
+  }));
+
+  if (!posts || loading) return null;
+
+  return (
+    <Pagination
+      tag={tag}
+      username={username}
+      page={parseInt(page, 10)}
+      lastPage={lastPage}
+    />
+  );
 };
 
 export default PaginationContainer;
